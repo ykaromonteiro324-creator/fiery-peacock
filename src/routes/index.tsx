@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import heroPeacock from "@/assets/hero-peacock.jpg";
 import featherDetail from "@/assets/feather-detail.jpg";
+import { MenuSection } from "@/components/menu-section";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -53,12 +54,20 @@ function Index() {
         >
           Pavão <span className="italic text-gradient-ember">Flamejante</span>
         </a>
+        <nav className="flex items-center gap-5">
+        <a
+          href="#cardapio"
+          className="text-[11px] font-medium uppercase tracking-[0.25em] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Cardápio
+        </a>
         <a
           href="#manifesto"
           className="text-[11px] font-medium uppercase tracking-[0.25em] text-muted-foreground transition-colors hover:text-foreground"
         >
           Manifesto
         </a>
+        </nav>
       </header>
 
       {/* Hero — cartaz full-bleed */}
@@ -96,6 +105,8 @@ function Index() {
           </div>
         </div>
       </section>
+
+      <MenuSection />
 
       {/* Manifesto */}
       <section id="manifesto" className="relative scroll-mt-20 px-6 py-24 sm:px-10 sm:py-36">
