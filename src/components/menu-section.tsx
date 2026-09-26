@@ -80,7 +80,7 @@ export function MenuSection() {
     if (index >= 0) setSelected(index);
   };
 
-  const current = categories[selected];
+  const current = categories[selected] ?? categories[0]!;
 
   return (
     <section id="cardapio" className="scroll-mt-20 px-4 py-20 sm:px-10 sm:py-28">
