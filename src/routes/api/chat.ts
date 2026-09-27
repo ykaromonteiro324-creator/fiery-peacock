@@ -115,8 +115,23 @@ export const Route = createFileRoute("/api/chat")({
             );
           }
 
-          const body = (await request.json()) as { messages?: ChatMessage[] };
+          const body = (await request.json()) as { messages?: ChatMessage[]; location?: unknown };
           const messages = Array.isArray(body.messages) ? body.messages : [];
+
+          // Localização só é aceita se o usuário autorizou no navegador e enviou nesta requisição.
+          let location: UserLocation | null = null;
+          const rawLocation = body.location as { lat?: unknown; lng?: unknown } | undefined;
+          if (
+            rawLocation &&
+            typeof rawLocation.lat === "number" &&
+            typeof rawLocation.lng === "number" &&
+            Number.isFinite(rawLocation.lat) &&
+            Number.isFinite(rawLocation.lng) &&
+            Math.abs(rawLocation.lat) <= 90 &&
+            Math.abs(rawLocation.lng) <= 180
+          ) {
+            location = { lat: rawLocation.lat, lng: rawLocation.lng };
+          }
 
           const safeMessages = messages
             .filter(
@@ -143,7 +158,7 @@ export const Route = createFileRoute("/api/chat")({
             },
             body: JSON.stringify({
               model: MODEL,
-              instructions: SYSTEM_PROMPT,
+              instructions: buildInstructions(location),
               input: safeMessages,
               store: false,
               stream: true,
