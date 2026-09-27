@@ -1,8 +1,9 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
 import { ImageAccordion } from "@/components/ui/image-accordion";
 import { Button } from "@/components/ui/button";
 import { MenuCustomizer, type MenuCustomization } from "@/components/menu-customizer";
 import { menuCategories } from "@/lib/menu-data";
+import { supabase } from "@/lib/supabase";
 import { ShoppingBag, Trash2 } from "lucide-react";
 import bruschetta from "@/assets/menu/bruschetta.jpg.asset.json";
 import bolinhoCostela from "@/assets/menu/bolinho-costela.jpg.asset.json";
@@ -108,6 +109,8 @@ function AnimatedDishImage({ src, alt }: { src: string; alt: string }) {
 }
 
 export function MenuSection() {
+  const [remoteCategories, setRemoteCategories] = useState<Category[] | null>(null);
+  useEffect(() => { if (!supabase) return; Promise.all([supabase.from("categorias").select("*").eq("ativo", true).order("ordem"), supabase.from("produtos").select("*").eq("ativo", true).order("ordem")]).then(([cr, pr]) => { if (cr.data?.length && pr.data?.length) { const by = new Map<string, Dish[]>(); for (const p of pr.data as any[]) { const arr = by.get(p.categoria_id) ?? []; arr.push({ name:p.nome, description:p.descricao, price: money(p.preco_promocional != null && p.preco_promocional < p.preco ? p.preco_promocional : p.preco), image:p.imagens?.[0] ?? "" }); by.set(p.categoria_id, arr); } const cats = (cr.data as any[]).map(c => ({ title:c.nome, subtitle:"", image:by.get(c.id)?.[0]?.image ?? "", dishes:by.get(c.id) ?? [] })).filter(x => x.dishes.length); if (cats.length) setRemoteCategories(cats); } }); }, []);
   const [selected, setSelected] = useState(0);
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [order, setOrder] = useState<OrderLine[]>([]);
@@ -154,7 +157,8 @@ export function MenuSection() {
     window.location.href = `mailto:ola@pavaoflamejante.com.br?subject=${encodeURIComponent("Novo pedido - Pavão Flamejante")}&body=${encodeURIComponent(body)}`;
   };
 
-  const current = categories[selected] ?? categories[0];
+  const displayedCategories = remoteCategories ?? categories;
+  const current = displayedCategories[selected] ?? displayedCategories[0];
   if (!current) return null;
 
   return (
@@ -170,13 +174,13 @@ export function MenuSection() {
 
         <div ref={galleryRef} className="mt-10" onClick={pick} onFocus={pick}>
           <ImageAccordion
-            items={categories.map(({ image, title, subtitle }) => ({ image, title, subtitle }))}
+            items={displayedCategories.map(({ image, title, subtitle }) => ({ image, title, subtitle }))}
             className="h-[220px] gap-1 sm:h-[320px] sm:gap-2 lg:h-[420px] lg:gap-3"
           />
         </div>
 
         <div className="mt-5 flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Categorias do cardápio">
-          {categories.map((category, index) => (
+          {displayedCategories.map((category, index) => (
             <Button key={category.title} type="button" role="tab" aria-selected={selected === index} aria-controls="menu-pratos" variant={selected === index ? "secondary" : "ghost"} size="sm" onClick={() => selectCategory(index)} className={`shrink-0 rounded-sm border px-3.5 text-xs sm:text-sm ${selected === index ? "border-primary text-foreground" : "border-border text-muted-foreground"}`}>
               {category.title}
             </Button>
