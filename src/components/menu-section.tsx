@@ -38,8 +38,6 @@ import whisky from "@/assets/menu/whisky.jpg.asset.json";
 import coquetel from "@/assets/menu/coquetel.jpg.asset.json";
 import semAlcool from "@/assets/menu/sem-alcool.jpg.asset.json";
 
-const cover = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=80`;
-
 type Dish = { name: string; description: string; price: string; image: string };
 type Category = { title: string; subtitle: string; image: string; dishes: Dish[] };
 
@@ -47,7 +45,7 @@ const categories: Category[] = [
   {
     title: "Entradas",
     subtitle: "Para começar à mesa",
-    image: cover("1572695157366-5e585ab2b69f"),
+    image: bruschetta.url,
     dishes: [
       { name: "Bruschetta da casa", description: "Pão tostado, tomate temperado, manjericão e azeite.", price: "R$ 32", image: bruschetta.url },
       { name: "Bolinho de costela", description: "Porção de bolinhos crocantes com maionese de alho.", price: "R$ 38", image: bolinhoCostela.url },
@@ -60,7 +58,7 @@ const categories: Category[] = [
   {
     title: "Pratos principais",
     subtitle: "Da brasa para a mesa",
-    image: cover("1558030006-450675393462"),
+    image: ancho.url,
     dishes: [
       { name: "Bife ancho na brasa", description: "Corte de 300 g, batatas rústicas e manteiga de ervas.", price: "R$ 98", image: ancho.url },
       { name: "Peixe do dia", description: "Filé grelhado com legumes salteados e limão.", price: "R$ 84", image: peixe.url },
@@ -73,7 +71,7 @@ const categories: Category[] = [
   {
     title: "Massas",
     subtitle: "Conforto em cada garfada",
-    image: cover("1621996346565-e3dbc646d9a9"),
+    image: penne.url,
     dishes: [
       { name: "Penne ao sugo", description: "Molho de tomate da casa, parmesão e manjericão.", price: "R$ 54", image: penne.url },
       { name: "Fettuccine com cogumelos", description: "Cogumelos salteados, manteiga e salsinha.", price: "R$ 66", image: fettuccine.url },
@@ -86,7 +84,7 @@ const categories: Category[] = [
   {
     title: "Hambúrgueres",
     subtitle: "Pão macio, brasa quente",
-    image: cover("1568901346375-23c9450c58cd"),
+    image: burgerClassico.url,
     dishes: [
       { name: "Clássico da casa", description: "Blend 180 g, queijo, alface, tomate e picles.", price: "R$ 44", image: burgerClassico.url },
       { name: "Flamejante", description: "Blend 180 g, bacon, cheddar e maionese de pimenta defumada.", price: "R$ 52", image: burgerFlamejante.url },
@@ -99,7 +97,7 @@ const categories: Category[] = [
   {
     title: "Sobremesas",
     subtitle: "Um pouco mais de tempo",
-    image: cover("1565958011703-44f9829ba187"),
+    image: boloFrutas.url,
     dishes: [
       { name: "Petit gâteau", description: "Bolinho de chocolate quente, calda e sorvete de creme.", price: "R$ 34", image: petitGateau.url },
       { name: "Panna cotta", description: "Creme de baunilha com calda de morangos frescos.", price: "R$ 29", image: pannaCotta.url },
@@ -112,7 +110,7 @@ const categories: Category[] = [
   {
     title: "Bebidas",
     subtitle: "Para brindar ou refrescar",
-    image: cover("1551024709-8f23befc6f87"),
+    image: semAlcool.url,
     dishes: [
       { name: "Caipirinha de limão", description: "Cachaça, limão fresco, açúcar e bastante gelo.", price: "R$ 28", image: caipirinha.url },
       { name: "Coquetel da casa", description: "Drink cítrico com destilado, frutas e gelo.", price: "R$ 34", image: drinkCasa.url },
