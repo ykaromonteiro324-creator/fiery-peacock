@@ -16,7 +16,7 @@ export function FloatingPeacockChat() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const dragRef = useRef({ startX: 0, startY: 0, originX: 0, originY: 0 });
   const movedRef = useRef(false);
@@ -160,7 +160,7 @@ export function FloatingPeacockChat() {
 
       <div
         className="fixed z-[101] select-none"
-        style={{ left: position.x, top: position.y, touchAction: "none" }}
+        style={position ? { left: position.x, top: position.y, touchAction: "none" } : { right: 24, bottom: 24, touchAction: "none" }}
       >
         <button
           type="button"
