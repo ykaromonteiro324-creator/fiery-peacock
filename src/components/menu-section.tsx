@@ -1,6 +1,7 @@
 import { useRef, useState, type SyntheticEvent } from "react";
 import { ImageAccordion } from "@/components/ui/image-accordion";
 import { Button } from "@/components/ui/button";
+import { menuCategories } from "@/lib/menu-data";
 import bruschetta from "@/assets/menu/bruschetta.jpg.asset.json";
 import bolinhoCostela from "@/assets/menu/bolinho-costela.jpg.asset.json";
 import tartare from "@/assets/menu/tartare.jpg.asset.json";
@@ -41,86 +42,25 @@ import semAlcool from "@/assets/menu/sem-alcool.jpg.asset.json";
 type Dish = { name: string; description: string; price: string; image: string };
 type Category = { title: string; subtitle: string; image: string; dishes: Dish[] };
 
-const categories: Category[] = [
-  {
-    title: "Entradas",
-    subtitle: "Para começar à mesa",
-    image: bruschetta.url,
-    dishes: [
-      { name: "Bruschetta da casa", description: "Pão tostado, tomate temperado, manjericão e azeite.", price: "R$ 32", image: bruschetta.url },
-      { name: "Bolinho de costela", description: "Porção de bolinhos crocantes com maionese de alho.", price: "R$ 38", image: bolinhoCostela.url },
-      { name: "Tartare de filé", description: "Filé picado na faca, mostarda, alcaparras e torradas.", price: "R$ 48", image: tartare.url },
-      { name: "Salada da horta", description: "Folhas da estação, tomate, cenoura e vinagrete de limão.", price: "R$ 34", image: saladaHorta.url },
-      { name: "Rolinhos de legumes", description: "Legumes frescos em papel de arroz, molho de amendoim.", price: "R$ 36", image: rolinhos.url },
-      { name: "Legumes assados", description: "Legumes da estação, ervas frescas e azeite da casa.", price: "R$ 35", image: legumesAssados.url },
-    ],
-  },
-  {
-    title: "Pratos principais",
-    subtitle: "Da brasa para a mesa",
-    image: ancho.url,
-    dishes: [
-      { name: "Bife ancho na brasa", description: "Corte de 300 g, batatas rústicas e manteiga de ervas.", price: "R$ 98", image: ancho.url },
-      { name: "Peixe do dia", description: "Filé grelhado com legumes salteados e limão.", price: "R$ 84", image: peixe.url },
-      { name: "Frango grelhado", description: "Peito grelhado com batatas douradas e legumes verdes.", price: "R$ 68", image: frango.url },
-      { name: "Costela barbecue", description: "Costela suína assada lentamente, fritas e molho da casa.", price: "R$ 92", image: costela.url },
-      { name: "Filé com fritas", description: "Filé grelhado ao ponto, batatas fritas e salada fresca.", price: "R$ 89", image: file.url },
-      { name: "Curry de legumes", description: "Legumes ao molho levemente picante, servidos com arroz.", price: "R$ 64", image: curry.url },
-    ],
-  },
-  {
-    title: "Massas",
-    subtitle: "Conforto em cada garfada",
-    image: penne.url,
-    dishes: [
-      { name: "Penne ao sugo", description: "Molho de tomate da casa, parmesão e manjericão.", price: "R$ 54", image: penne.url },
-      { name: "Fettuccine com cogumelos", description: "Cogumelos salteados, manteiga e salsinha.", price: "R$ 66", image: fettuccine.url },
-      { name: "Pappardelle ao ragu", description: "Ragu de carne cozido lentamente, finalizado com parmesão.", price: "R$ 72", image: pappardelle.url },
-      { name: "Farfalle ao pesto", description: "Pesto de manjericão, tomate fresco e folhas verdes.", price: "R$ 58", image: farfalle.url },
-      { name: "Fusilli à bolonhesa", description: "Molho de carne e tomate, com queijo ralado na hora.", price: "R$ 62", image: fusilli.url },
-      { name: "Espaguete ao pomodoro", description: "Tomate, alho, azeite e folhas de manjericão.", price: "R$ 56", image: espaguete.url },
-    ],
-  },
-  {
-    title: "Hambúrgueres",
-    subtitle: "Pão macio, brasa quente",
-    image: burgerClassico.url,
-    dishes: [
-      { name: "Clássico da casa", description: "Blend 180 g, queijo, alface, tomate e picles.", price: "R$ 44", image: burgerClassico.url },
-      { name: "Flamejante", description: "Blend 180 g, bacon, cheddar e maionese de pimenta defumada.", price: "R$ 52", image: burgerFlamejante.url },
-      { name: "Duplo smash", description: "Dois discos de 90 g, queijo prato, cebola e molho da casa.", price: "R$ 48", image: burgerSmash.url },
-      { name: "Frango crocante", description: "Frango empanado, salada de repolho e maionese temperada.", price: "R$ 46", image: burgerFrango.url },
-      { name: "Salada burger", description: "Blend 180 g, queijo, alface, tomate e cebola roxa.", price: "R$ 45", image: burgerSalada.url },
-      { name: "Bacon & queijo", description: "Blend 180 g, bacon crocante, queijo derretido e molho da casa.", price: "R$ 50", image: burgerBacon.url },
-    ],
-  },
-  {
-    title: "Sobremesas",
-    subtitle: "Um pouco mais de tempo",
-    image: boloFrutas.url,
-    dishes: [
-      { name: "Petit gâteau", description: "Bolinho de chocolate quente, calda e sorvete de creme.", price: "R$ 34", image: petitGateau.url },
-      { name: "Panna cotta", description: "Creme de baunilha com calda de morangos frescos.", price: "R$ 29", image: pannaCotta.url },
-      { name: "Bolo de frutas vermelhas", description: "Fatia de bolo macio, creme e frutas frescas.", price: "R$ 32", image: boloFrutas.url },
-      { name: "Cookie de chocolate", description: "Cookie grande com gotas de chocolate, servido morno.", price: "R$ 22", image: cookie.url },
-      { name: "Crepe com morangos", description: "Crepe delicado com creme, morangos e chantilly.", price: "R$ 31", image: crepe.url },
-      { name: "Donut de chocolate", description: "Massa fofinha coberta com chocolate e confeitos.", price: "R$ 19", image: donut.url },
-    ],
-  },
-  {
-    title: "Bebidas",
-    subtitle: "Para brindar ou refrescar",
-    image: semAlcool.url,
-    dishes: [
-      { name: "Caipirinha de limão", description: "Cachaça, limão fresco, açúcar e bastante gelo.", price: "R$ 28", image: caipirinha.url },
-      { name: "Coquetel da casa", description: "Drink cítrico com destilado, frutas e gelo.", price: "R$ 34", image: drinkCasa.url },
-      { name: "Suco de laranja", description: "Laranja espremida na hora, sem adição de açúcar.", price: "R$ 16", image: sucoLaranja.url },
-      { name: "Whisky com gelo", description: "Dose de whisky servida com gelo e casca de laranja.", price: "R$ 36", image: whisky.url },
-      { name: "Coquetel cítrico", description: "Destilado, toque de laranja e bitter.", price: "R$ 32", image: coquetel.url },
-      { name: "Soda de frutas", description: "Frutas da estação, água com gás e gelo.", price: "R$ 18", image: semAlcool.url },
-    ],
-  },
+// Fotos de cada prato, na mesma ordem de src/lib/menu-data.ts (fonte única dos dados).
+const categoryImages = [bruschetta.url, ancho.url, penne.url, burgerClassico.url, boloFrutas.url, semAlcool.url];
+const dishImages: string[][] = [
+  [bruschetta.url, bolinhoCostela.url, tartare.url, saladaHorta.url, rolinhos.url, legumesAssados.url],
+  [ancho.url, peixe.url, frango.url, costela.url, file.url, curry.url],
+  [penne.url, fettuccine.url, pappardelle.url, farfalle.url, fusilli.url, espaguete.url],
+  [burgerClassico.url, burgerFlamejante.url, burgerSmash.url, burgerFrango.url, burgerSalada.url, burgerBacon.url],
+  [petitGateau.url, pannaCotta.url, boloFrutas.url, cookie.url, crepe.url, donut.url],
+  [caipirinha.url, drinkCasa.url, sucoLaranja.url, whisky.url, coquetel.url, semAlcool.url],
 ];
+
+const categories: Category[] = menuCategories.map((category, categoryIndex) => ({
+  ...category,
+  image: categoryImages[categoryIndex] ?? "",
+  dishes: category.dishes.map((dish, dishIndex) => ({
+    ...dish,
+    image: dishImages[categoryIndex]?.[dishIndex] ?? "",
+  })),
+}));
 
 export function MenuSection() {
   const [selected, setSelected] = useState(0);
