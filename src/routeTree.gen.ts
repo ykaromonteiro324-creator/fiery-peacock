@@ -70,7 +70,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   '/entrar': typeof EntrarRoute
   '/cadastro': typeof CadastroRoute
-  '/esquici-senha': typeof EsqueciSenhaRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sem-acesso': typeof SemAcessoRoute
   '/painel': typeof PainelRoute
