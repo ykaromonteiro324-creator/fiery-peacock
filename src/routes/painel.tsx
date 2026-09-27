@@ -1,0 +1,1 @@
+import{createFileRoute}from"@tanstack/react-router";import{ProtectedRoute}from"@/components/auth-routes";export const Route=createFileRoute("/painel")({component:()=> <ProtectedRoute><main className="min-h-screen px-6 py-16"><h1 className="font-display text-5xl">Painel</h1><p className="mt-3 text-muted-foreground">Área protegida.</p></main></ProtectedRoute>});
