@@ -11,12 +11,30 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as SemAcessoRouteImport } from './routes/sem-acesso'
+import { Route as PainelRouteImport } from './routes/painel'
+import { Route as MinhaContaRouteImport } from './routes/minha-conta'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminProdutosRouteImport } from './routes/admin/produtos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EntrarRoute = EntrarRouteImport.update({ id:'/entrar',path:'/entrar',getParentRoute:()=>rootRouteImport } as any)
+const CadastroRoute = CadastroRouteImport.update({ id:'/cadastro',path:'/cadastro',getParentRoute:()=>rootRouteImport } as any)
+const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({ id:'/esqueci-senha',path:'/esqueci-senha',getParentRoute:()=>rootRouteImport } as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({ id:'/redefinir-senha',path:'/redefinir-senha',getParentRoute:()=>rootRouteImport } as any)
+const SemAcessoRoute = SemAcessoRouteImport.update({ id:'/sem-acesso',path:'/sem-acesso',getParentRoute:()=>rootRouteImport } as any)
+const PainelRoute = PainelRouteImport.update({ id:'/painel',path:'/painel',getParentRoute:()=>rootRouteImport } as any)
+const MinhaContaRoute = MinhaContaRouteImport.update({ id:'/minha-conta',path:'/minha-conta',getParentRoute:()=>rootRouteImport } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({ id:'/admin/',path:'/admin/',getParentRoute:()=>rootRouteImport } as any)
+const AdminProdutosRoute = AdminProdutosRouteImport.update({ id:'/admin/produtos',path:'/admin/produtos',getParentRoute:()=>rootRouteImport } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -24,27 +42,63 @@ const ApiChatRoute = ApiChatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/entrar': typeof EntrarRoute
+  '/cadastro': typeof CadastroRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/sem-acesso': typeof SemAcessoRoute
+  '/painel': typeof PainelRoute
+  '/minha-conta': typeof MinhaContaRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/produtos': typeof AdminProdutosRoute
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
+  '/entrar': typeof EntrarRoute
+  '/cadastro': typeof CadastroRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/sem-acesso': typeof SemAcessoRoute
+  '/painel': typeof PainelRoute
+  '/minha-conta': typeof MinhaContaRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/produtos': typeof AdminProdutosRoute
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
+  '/entrar': typeof EntrarRoute
+  '/cadastro': typeof CadastroRoute
+  '/esquici-senha': typeof EsqueciSenhaRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/sem-acesso': typeof SemAcessoRoute
+  '/painel': typeof PainelRoute
+  '/minha-conta': typeof MinhaContaRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/produtos': typeof AdminProdutosRoute
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/chat'
+  fullPaths: '/' | '/api/chat' | '/entrar' | '/cadastro' | '/esqueci-senha' | '/redefinir-senha' | '/sem-acesso' | '/painel' | '/minha-conta' | '/admin/' | '/admin/produtos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/chat'
-  id: '__root__' | '/' | '/api/chat'
+  to: '/' | '/api/chat' | '/entrar' | '/cadastro' | '/esqueci-senha' | '/redefinir-senha' | '/sem-acesso' | '/painel' | '/minha-conta' | '/admin/' | '/admin/produtos'
+  id: '__root__' | '/' | '/api/chat' | '/entrar' | '/cadastro' | '/esqueci-senha' | '/redefinir-senha' | '/sem-acesso' | '/painel' | '/minha-conta' | '/admin/' | '/admin/produtos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  EntrarRoute: typeof EntrarRoute
+  CadastroRoute: typeof CadastroRoute
+  EsqueciSenhaRoute: typeof EsqueciSenhaRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  SemAcessoRoute: typeof SemAcessoRoute
+  PainelRoute: typeof PainelRoute
+  MinhaContaRoute: typeof MinhaContaRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminProdutosRoute: typeof AdminProdutosRoute
   IndexRoute: typeof IndexRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -58,7 +112,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/chat': {
+    '/entrar': { id:'/entrar',path:'/entrar',fullPath:'/entrar',preLoaderRoute:typeof EntrarRouteImport,parentRoute:typeof rootRouteImport },
+  '/cadastro': { id:'/cadastro',path:'/cadastro',fullPath:'/cadastro',preLoaderRoute:typeof CadastroRouteImport,parentRoute:typeof rootRouteImport },
+  '/esqueci-senha': { id:'/esqueci-senha',path:'/esqueci-senha',fullPath:'/esqueci-senha',preLoaderRoute:typeof EsqueciSenhaRouteImport,parentRoute:typeof rootRouteImport },
+  '/redefinir-senha': { id:'/redefinir-senha',path:'/redefinir-senha',fullPath:'/redefinir-senha',preLoaderRoute:typeof RedefinirSenhaRouteImport,parentRoute:typeof rootRouteImport },
+  '/sem-acesso': { id:'/sem-acesso',path:'/sem-acesso',fullPath:'/sem-acesso',preLoaderRoute:typeof SemAcessoRouteImport,parentRoute:typeof rootRouteImport },
+  '/painel': { id:'/painel',path:'/painel',fullPath:'/painel',preLoaderRoute:typeof PainelRouteImport,parentRoute:typeof rootRouteImport },
+  '/minha-conta': { id:'/minha-conta',path:'/minha-conta',fullPath:'/minha-conta',preLoaderRoute:typeof MinhaContaRouteImport,parentRoute:typeof rootRouteImport },
+  '/admin/': { id:'/admin/',path:'/admin/',fullPath:'/admin/',preLoaderRoute:typeof AdminIndexRouteImport,parentRoute:typeof rootRouteImport },
+  '/admin/produtos': { id:'/admin/produtos',path:'/admin/produtos',fullPath:'/admin/produtos',preLoaderRoute:typeof AdminProdutosRouteImport,parentRoute:typeof rootRouteImport },
+  '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
       fullPath: '/api/chat'
@@ -69,6 +132,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  EntrarRoute, CadastroRoute, EsqueciSenhaRoute, RedefinirSenhaRoute, SemAcessoRoute, PainelRoute, MinhaContaRoute, AdminIndexRoute, AdminProdutosRoute,
   IndexRoute: IndexRoute,
   ApiChatRoute: ApiChatRoute,
 }
