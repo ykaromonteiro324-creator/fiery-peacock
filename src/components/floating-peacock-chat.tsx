@@ -68,7 +68,7 @@ export function FloatingPeacockChat() {
     if (!movedRef.current) setOpen((value) => !value);
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     const text = input.trim();
     if (!text || typing) return;
 
@@ -78,21 +78,49 @@ export function FloatingPeacockChat() {
       text,
     };
 
-    setMessages((current) => [...current, userMessage]);
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
     setInput("");
     setTyping(true);
 
-    window.setTimeout(() => {
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: nextMessages.map(({ role, text }) => ({ role, text })),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Não foi possível responder agora.");
+      }
+
       setMessages((current) => [
         ...current,
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          text: "Recebi sua dúvida! 🤍 A conexão com a inteligência artificial pode ser ativada aqui no servidor para eu responder sobre o negócio em tempo real.",
+          text: data.reply,
         },
       ]);
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text:
+            error instanceof Error
+              ? error.message
+              : "Não consegui responder agora. Tente novamente em alguns segundos.",
+        },
+      ]);
+    } finally {
       setTyping(false);
-    }, 650);
+    }
   };
 
   return (
