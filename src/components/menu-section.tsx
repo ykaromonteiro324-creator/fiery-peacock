@@ -42,7 +42,7 @@ import whisky from "@/assets/menu/whisky.jpg.asset.json";
 import coquetel from "@/assets/menu/coquetel.jpg.asset.json";
 import semAlcool from "@/assets/menu/sem-alcool.jpg.asset.json";
 
-type Dish = { name: string; description: string; price: string; image: string };
+type Dish = { name: string; description: string; price: string; originalPrice?: string; image: string };
 type Category = { title: string; subtitle: string; image: string; dishes: Dish[] };
 type OrderLine = Dish & { category: string; customization: MenuCustomization };
 
@@ -110,7 +110,7 @@ function AnimatedDishImage({ src, alt }: { src: string; alt: string }) {
 
 export function MenuSection() {
   const [remoteCategories, setRemoteCategories] = useState<Category[] | null>(null);
-  useEffect(() => { if (!supabase) return; Promise.all([supabase.from("categorias").select("*").eq("ativo", true).order("ordem"), supabase.from("produtos").select("*").eq("ativo", true).order("ordem")]).then(([cr, pr]) => { if (cr.data?.length && pr.data?.length) { const by = new Map<string, Dish[]>(); for (const p of pr.data as any[]) { const arr = by.get(p.categoria_id) ?? []; arr.push({ name:p.nome, description:p.descricao, price: money(p.preco_promocional != null && p.preco_promocional < p.preco ? p.preco_promocional : p.preco), image:p.imagens?.[0] ?? "" }); by.set(p.categoria_id, arr); } const cats = (cr.data as any[]).map(c => ({ title:c.nome, subtitle:"", image:by.get(c.id)?.[0]?.image ?? "", dishes:by.get(c.id) ?? [] })).filter(x => x.dishes.length); if (cats.length) setRemoteCategories(cats); } }); }, []);
+  useEffect(() => { if (!supabase) return; Promise.all([supabase.from("categorias").select("*").eq("ativo", true).order("ordem"), supabase.from("produtos").select("*").eq("ativo", true).order("ordem")]).then(([cr, pr]) => { if (cr.data?.length && pr.data?.length) { const by = new Map<string, Dish[]>(); for (const p of pr.data as any[]) { const arr = by.get(p.categoria_id) ?? []; arr.push({ name:p.nome, description:p.descricao, price: money(p.preco_promocional != null && p.preco_promocional < p.preco ? p.preco_promocional : p.preco), originalPrice: p.preco_promocional != null && p.preco_promocional < p.preco ? money(p.preco) : undefined, image:p.imagens?.[0] ?? "" }); by.set(p.categoria_id, arr); } const cats = (cr.data as any[]).map(c => ({ title:c.nome, subtitle:"", image:by.get(c.id)?.[0]?.image ?? "", dishes:by.get(c.id) ?? [] })).filter(x => x.dishes.length); if (cats.length) setRemoteCategories(cats); } }); }, []);
   const [selected, setSelected] = useState(0);
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [order, setOrder] = useState<OrderLine[]>([]);
@@ -232,7 +232,7 @@ export function MenuSection() {
                 <h4 className="font-display text-2xl leading-tight">{dish.name}</h4>
                 <p className="mt-2 flex-1 text-sm font-light leading-relaxed text-muted-foreground">{dish.description}</p>
                 <div className="mt-6 flex items-center justify-between gap-3 border-t border-border pt-4">
-                  <span className="whitespace-nowrap font-medium text-primary">{dish.price}</span>
+                  <span className="whitespace-nowrap font-medium text-primary">{dish.originalPrice && <span className="mr-2 text-muted-foreground line-through">{dish.originalPrice}</span>}{dish.price}</span>
                   <Button type="button" variant="outline" size="sm" className="rounded-sm border-border bg-transparent text-xs font-medium uppercase tracking-widest" onClick={(event) => { event.stopPropagation(); setSelectedDish(dish); }}>
                     Personalizar <span aria-hidden="true">+</span>
                   </Button>
