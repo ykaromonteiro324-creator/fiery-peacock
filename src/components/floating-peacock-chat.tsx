@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, Sparkles, X, Grip } from "lucide-react";
+import { MessageCircle, Send, Sparkles, X, Grip, MapPin } from "lucide-react";
 import { ChatBubbles, type ChatMessage } from "@/components/ui/chat-bubbles";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,8 @@ export function FloatingPeacockChat() {
   const [typing, setTyping] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
   const dragRef = useRef({ startX: 0, startY: 0, originX: 0, originY: 0 });
   const movedRef = useRef(false);
 
@@ -76,6 +78,48 @@ export function FloatingPeacockChat() {
     if (!movedRef.current) setOpen((value) => !value);
   };
 
+  const shareLocation = () => {
+    if (locating || location) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: "Seu navegador não oferece localização. Sem problemas: o chat funciona normalmente — a localização só seria útil para perguntas de entrega e distância. 📍",
+        },
+      ]);
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setMessages((current) => [
+          ...current,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            text: "Localização compartilhada só para esta conversa. 📍 Agora posso contextualizar perguntas como “vocês entregam aqui?” ou “qual a distância?”. Nada é salvo.",
+          },
+        ]);
+      },
+      () => {
+        setLocating(false);
+        setMessages((current) => [
+          ...current,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            text: "Tudo bem! Sem a localização o chat continua funcionando normalmente — ela só é necessária para consultas de entrega e distância. Pode perguntar qualquer outra coisa. 😊",
+          },
+        ]);
+      },
+      { timeout: 10000, maximumAge: 300000 },
+    );
+  };
+
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || typing) return;
@@ -97,6 +141,7 @@ export function FloatingPeacockChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: nextMessages.map(({ role, text }) => ({ role, text })),
+          ...(location ? { location } : {}),
         }),
       });
 
@@ -172,6 +217,22 @@ export function FloatingPeacockChat() {
 
           <div className="border-t border-white/10 bg-black/20 p-3">
             <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1.5 focus-within:border-orange-400/50">
+              <button
+                type="button"
+                onClick={shareLocation}
+                disabled={locating || !!location}
+                aria-label={location ? "Localização compartilhada" : "Compartilhar localização para perguntas de entrega"}
+                title={location ? "Localização compartilhada" : "Compartilhar localização (só para perguntas de entrega)"}
+                className={cn(
+                  "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition",
+                  location
+                    ? "border-sky-400/50 bg-sky-500/20 text-sky-300"
+                    : "border-white/10 text-zinc-400 hover:border-orange-400/40 hover:text-orange-300",
+                  locating && "animate-pulse",
+                )}
+              >
+                <MapPin className="h-4 w-4" />
+              </button>
               <input
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
