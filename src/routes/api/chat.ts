@@ -20,18 +20,68 @@ Regras:
 - Apresente-se como Pavão ou assistente do Pavão Flamejante, sem afirmar que é o ChatGPT.
 - Seja útil, claro e objetivo. Pode usar listas, exemplos, passos e emojis quando ajudarem.`;
 
+const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/responses";
+const MODEL = "openai/gpt-6-astra";
+
+async function readStreamedText(body: ReadableStream<Uint8Array>): Promise<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let output = "";
+  let errorMessage: string | null = null;
+
+  const handleEvent = (raw: string) => {
+    const dataLines = raw
+      .split("\n")
+      .filter((line) => line.startsWith("data:"))
+      .map((line) => line.slice(5).trim());
+    if (!dataLines.length) return;
+    const payload = dataLines.join("\n");
+    if (payload === "[DONE]") return;
+    try {
+      const event = JSON.parse(payload) as {
+        type?: string;
+        delta?: string;
+        error?: { message?: string };
+      };
+      if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
+        output += event.delta;
+      } else if (event.type === "response.failed" || event.type === "error") {
+        errorMessage = event.error?.message ?? "Falha na geração da resposta.";
+      }
+    } catch {
+      // ignora frames incompletos
+    }
+  };
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let idx: number;
+    while ((idx = buffer.indexOf("\n\n")) !== -1) {
+      handleEvent(buffer.slice(0, idx));
+      buffer = buffer.slice(idx + 2);
+    }
+  }
+  if (buffer.trim()) handleEvent(buffer);
+
+  if (errorMessage) throw new Error(errorMessage);
+  return output;
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
-          const apiKey = process.env['OPENAI_API_KEY'];
+          const apiKey = process.env["LOVABLE_API_KEY"];
 
           if (!apiKey) {
             return Response.json(
               {
                 error:
-                  "A IA ainda não foi configurada. O administrador precisa adicionar a chave OPENAI_API_KEY nas variáveis do servidor.",
+                  "A IA ainda não foi configurada. O administrador precisa ativar a chave de IA do projeto nas configurações.",
               },
               { status: 503 },
             );
@@ -56,43 +106,45 @@ export const Route = createFileRoute("/api/chat")({
             return Response.json({ error: "Digite uma dúvida para começar." }, { status: 400 });
           }
 
-          const model = "gpt-5.6-luna";
-
-          const response = await fetch("https://api.openai.com/v1/responses", {
+          const response = await fetch(GATEWAY_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${apiKey}`,
+              "X-Lovable-AIG-SDK": "fetch",
             },
             body: JSON.stringify({
-              model,
+              model: MODEL,
               instructions: SYSTEM_PROMPT,
               input: safeMessages,
-              max_output_tokens: 500,
+              store: false,
+              stream: true,
+              reasoning: { effort: "low" },
             }),
           });
 
-          const data = (await response.json()) as {
-            output_text?: string;
-            error?: { message?: string };
-          };
-
-          if (!response.ok) {
-            console.error("OpenAI API error:", data.error);
+          if (!response.ok || !response.body) {
+            const detail = await response.text().catch(() => "");
+            console.error("AI gateway error:", response.status, detail.slice(0, 500));
+            if (response.status === 429) {
+              return Response.json(
+                { error: "Muitas perguntas ao mesmo tempo. Aguarde alguns segundos e tente de novo." },
+                { status: 429 },
+              );
+            }
             return Response.json(
-              {
-                error:
-                  "Não consegui falar com a IA agora. Tente novamente em alguns instantes.",
-              },
+              { error: "Não consegui falar com a IA agora. Tente novamente em alguns instantes." },
               { status: 502 },
             );
           }
 
-          const reply =
-            data.output_text?.trim() ||
-            "Não consegui gerar uma resposta agora. Pode tentar perguntar de outra forma?";
+          const reply = (await readStreamedText(response.body)).trim();
 
-          return Response.json({ reply });
+          return Response.json({
+            reply:
+              reply ||
+              "Não consegui gerar uma resposta agora. Pode tentar perguntar de outra forma?",
+          });
         } catch (error) {
           console.error("Chat API error:", error);
           return Response.json(
