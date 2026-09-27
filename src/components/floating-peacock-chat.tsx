@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, Sparkles, X, Grip } from "lucide-react";
+import { MessageCircle, Send, Sparkles, X, Grip, MapPin } from "lucide-react";
 import { ChatBubbles, type ChatMessage } from "@/components/ui/chat-bubbles";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,8 @@ export function FloatingPeacockChat() {
   const [typing, setTyping] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
   const dragRef = useRef({ startX: 0, startY: 0, originX: 0, originY: 0 });
   const movedRef = useRef(false);
 
