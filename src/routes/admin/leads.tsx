@@ -1,0 +1,7 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AdminRoute } from "@/components/auth-routes";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
+
+export const Route=createFileRoute("/admin/leads")({component:Page});
+function Page(){const[rows,setRows]=useState<any[]>([]);useEffect(()=>{supabase?.from("leads").select("*").order("created_at",{ascending:false}).then(({data})=>setRows(data??[]));},[]);return <AdminRoute><main className="min-h-screen px-4 pb-16 pt-24 sm:px-8"><div className="mx-auto max-w-7xl"><h1 className="font-display text-4xl">Leads</h1><p className="mt-2 text-muted-foreground">Contatos e potenciais clientes.</p><div className="mt-7 overflow-x-auto rounded-2xl border"><table className="w-full text-left text-sm"><thead className="bg-muted/50"><tr><th className="p-4">ID</th><th className="p-4">Status</th><th className="p-4">Data</th></tr></thead><tbody>{rows.map(row=><tr key={row.id} className="border-t"><td className="p-4 font-mono text-xs">{String(row.id).slice(0,8)}</td><td className="p-4">{row.status??"Novo"}</td><td className="p-4">{row.created_at?new Date(row.created_at).toLocaleString("pt-BR"):"-"}</td></tr>)}</tbody></table>{!rows.length&&<p className="p-8 text-center text-muted-foreground">Nenhum registro encontrado.</p>}</div></div></main></AdminRoute>}
