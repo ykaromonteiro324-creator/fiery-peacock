@@ -1,3 +1,62 @@
-import { createFileRoute,useNavigate } from "@tanstack/react-router";import {useEffect,useState} from "react";import {supabase} from "@/lib/supabase";import {useAuth} from "@/auth/AuthProvider";import {useRole} from "@/hooks/useRole";
-export const Route=createFileRoute("/entrar")({validateSearch:(s:Record<string,unknown>)=>({redirect:typeof s.redirect==="string"?s.redirect:"/painel"}),component:Login});
-function Login(){const {user}=useAuth();const {isAdmin,isEquipe,isCliente}=useRole();const nav=useNavigate();const {redirect}=Route.useSearch();const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [error,setError]=useState("");const [busy,setBusy]=useState(false);useEffect(()=>{if(!user)return;const target=redirect&&redirect!=="/painel"?redirect:(isAdmin?"/admin":isEquipe?"/painel":isCliente?"/minha-conta":"/painel");nav({to:target as string})},[user,isAdmin,isEquipe,isCliente,redirect,nav]);if(user)return nullconst login=async()=>{if(!supabase)return setError("O sistema de acesso ainda não foi configurado.");setBusy(true);setError("");const {error:e}=await supabase.auth.signInWithPassword({email,password});setBusy(false);if(e){setError(e.message.toLowerCase().includes("not confirmed")?"Confirme seu e-mail para entrar":"E-mail ou senha incorretos");return}nav({to:redirect as string})};const google=async()=>{if(!supabase)return;const {error:e}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin+(redirect||"/painel")}});if(e)setError("Não foi possível entrar com Google. Tente novamente.")};return <main className="grid min-h-screen place-items-center px-5"><div className="w-full max-w-md rounded-2xl border border-border bg-card p-7"><h1 className="font-display text-4xl">Entrar</h1><div className="mt-7 space-y-4"><input className="h-11 w-full rounded-lg border bg-background px-3" placeholder="E-mail" type="email" value={email} onChange={e=>setEmail(e.target.value)}/><input className="h-11 w-full rounded-lg border bg-background px-3" placeholder="Senha" type="password" value={password} onChange={e=>setPassword(e.target.value)}/>{error&&<p className="text-sm text-red-400">{error}</p>}<button disabled={busy} onClick={login} className="h-11 w-full rounded-lg bg-primary text-primary-foreground">{busy?"Entrando...":"Entrar"}</button><button onClick={google} className="h-11 w-full rounded-lg border">Entrar com Google</button><div className="flex justify-between text-sm"><a href="/esqueci-senha" className="text-primary">Esqueci minha senha</a><a href="/cadastro" className="text-primary">Criar conta</a></div></div></div></main>}
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/auth/AuthProvider";
+import { useRole } from "@/hooks/useRole";
+
+export const Route = createFileRoute("/entrar")({
+  validateSearch: (s: Record<string, unknown>) => ({ redirect: typeof s.redirect === "string" ? s.redirect : "/painel" }),
+  component: Login,
+});
+
+function Login() {
+  const { user } = useAuth();
+  const { isAdmin, isEquipe, isCliente } = useRole();
+  const nav = useNavigate();
+  const { redirect } = Route.useSearch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const target = redirect && redirect !== "/painel" ? redirect : isAdmin ? "/admin" : isEquipe ? "/painel" : isCliente ? "/minha-conta" : "/painel";
+    nav({ to: target as string });
+  }, [user, isAdmin, isEquipe, isCliente, redirect, nav]);
+
+  const login = async () => {
+    if (!supabase) return setError("Não foi possível iniciar o acesso. Tente novamente.");
+    setBusy(true); setError("");
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (authError) {
+      const msg = authError.message.toLowerCase();
+      setError(msg.includes("not confirmed") ? "Confirme seu e-mail para entrar" : "E-mail ou senha incorretos");
+    }
+  };
+
+  const google = async () => {
+    if (!supabase) return setError("Não foi possível iniciar o acesso. Tente novamente.");
+    const { error: authError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin + (redirect || "/painel") },
+    });
+    if (authError) setError("Não foi possível entrar com Google. Tente novamente.");
+  };
+
+  if (user) return null;
+  return <main className="grid min-h-screen place-items-center px-5">
+    <div className="w-full max-w-md rounded-2xl border border-border bg-card p-7">
+      <h1 className="font-display text-4xl">Entrar</h1>
+      <div className="mt-7 space-y-4">
+        <input className="h-11 w-full rounded-lg border bg-background px-3" placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+        <input className="h-11 w-full rounded-lg border bg-background px-3" placeholder="Senha" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        {error && <p className="text-sm text-red-400">{error}</p>}
+        <button disabled={busy} onClick={login} className="h-11 w-full rounded-lg bg-primary text-primary-foreground">{busy ? "Entrando..." : "Entrar"}</button>
+        <button onClick={google} className="h-11 w-full rounded-lg border">Entrar com Google</button>
+        <div className="flex justify-between text-sm"><a href="/esqueci-senha" className="text-primary">Esqueci minha senha</a><a href="/cadastro" className="text-primary">Criar conta</a></div>
+      </div>
+    </div>
+  </main>;
+}
