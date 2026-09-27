@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import heroPeacock from "@/assets/hero-peacock.jpg";
 import featherDetail from "@/assets/feather-detail.jpg";
 import { MenuSection } from "@/components/menu-section";
+import { FloatingPeacockChat } from "@/components/floating-peacock-chat";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -45,7 +46,7 @@ const traits = [
 
 function Index() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground">\n      <FloatingPeacockChat />
       {/* Barra mínima */}
       <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-5 sm:px-10">
         <a
