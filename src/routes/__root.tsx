@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/auth/AuthProvider";
+import { AccountMenu } from "@/components/account-menu";
 
 function NotFoundComponent() {
   return (
@@ -125,7 +126,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}><AuthProvider>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      {/* Required: nested routes render here. Removing <AccountMenu /><Outlet /> breaks all child routes. */}
       <Outlet />
       </AuthProvider></QueryClientProvider>
   );
