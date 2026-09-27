@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         try {
-          const apiKey = process.env.OPENAI_API_KEY;
+          const apiKey = process.env['OPENAI_API_KEY'];
 
           if (!apiKey) {
             return Response.json(
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/api/chat")({
             return Response.json({ error: "Digite uma dúvida para começar." }, { status: 400 });
           }
 
-          const model = process.env.OPENAI_MODEL || "gpt-6-astra";
+          const model = process.env['OPENAI_MODEL'] || "gpt-6-astra";
 
           const response = await fetch("https://api.openai.com/v1/responses", {
             method: "POST",

@@ -23,14 +23,22 @@ export function FloatingPeacockChat() {
 
   useEffect(() => {
     const clamp = () => {
-      setPosition((p) => ({
-        x: Math.min(p.x, Math.max(0, window.innerWidth - 110)),
-        y: Math.min(p.y, Math.max(0, window.innerHeight - 110)),
-      }));
+      setPosition((p) =>
+        p
+          ? {
+              x: Math.min(p.x, Math.max(0, window.innerWidth - 110)),
+              y: Math.min(p.y, Math.max(0, window.innerHeight - 110)),
+            }
+          : p,
+      );
     };
     window.addEventListener("resize", clamp);
     return () => window.removeEventListener("resize", clamp);
   }, []);
+
+  const current = position ?? (typeof window !== "undefined"
+    ? { x: window.innerWidth - 102, y: window.innerHeight - 102 }
+    : { x: 0, y: 0 });
 
   useEffect(() => {
     if (!dragging) return;
@@ -57,8 +65,8 @@ export function FloatingPeacockChat() {
     dragRef.current = {
       startX: event.clientX,
       startY: event.clientY,
-      originX: position.x,
-      originY: position.y,
+      originX: current.x,
+      originY: current.y,
     };
     movedRef.current = false;
     setDragging(true);
@@ -129,10 +137,12 @@ export function FloatingPeacockChat() {
         <div
           className="fixed z-[100] w-[min(390px,calc(100vw-24px))] overflow-hidden rounded-3xl border border-orange-400/30 bg-zinc-950/95 shadow-[0_20px_80px_rgba(0,0,0,0.55),0_0_45px_rgba(249,115,22,0.18)] backdrop-blur-xl"
           style={{
-            right: position.x < 140 ? 12 : undefined,
-            left: position.x >= 140 ? Math.min(position.x, Math.max(12, window.innerWidth - 414)) : undefined,
-            bottom: position.y < 140 ? 104 : undefined,
-            top: position.y >= 140 ? Math.min(position.y - 310, Math.max(12, window.innerHeight - 480)) : undefined,
+            ...(position
+              ? {
+                  left: Math.max(12, Math.min(position.x - 300, window.innerWidth - 402)),
+                  top: Math.max(12, Math.min(position.y - 470, window.innerHeight - 480)),
+                }
+              : { right: 12, bottom: 104 }),
           }}
         >
           <div className="relative overflow-hidden border-b border-white/10 px-5 py-4">
