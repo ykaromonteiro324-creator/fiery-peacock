@@ -93,3 +93,100 @@ begin
   alter publication supabase_realtime add table public.pedidos;
 exception when duplicate_object then null;
 end $$;
+-- Correção de segurança: clientes não recebem SELECT direto das tabelas.
+drop policy if exists "pedidos_public_select_token" on public.pedidos;
+drop policy if exists "pedido_itens_public_select_token" on public.pedido_itens;
+
+create or replace function public.criar_pedido_publico(pedido jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  novo public.pedidos;
+  item jsonb;
+begin
+  insert into public.pedidos (
+    cliente_nome, cliente_telefone, tipo, endereco, observacoes,
+    subtotal, taxa_entrega, total
+  )
+  values (
+    trim(pedido->>'cliente_nome'),
+    trim(pedido->>'cliente_telefone'),
+    pedido->>'tipo',
+    nullif(trim(coalesce(pedido->>'endereco','')), ''),
+    nullif(trim(coalesce(pedido->>'observacoes','')), ''),
+    (pedido->>'subtotal')::numeric,
+    coalesce((pedido->>'taxa_entrega')::numeric, 0),
+    (pedido->>'total')::numeric
+  )
+  returning * into novo;
+
+  for item in select * from jsonb_array_elements(coalesce(pedido->'itens','[]'::jsonb))
+  loop
+    insert into public.pedido_itens (
+      pedido_id, nome, categoria, quantidade, preco_unitario, total,
+      adicionais, removidos, observacoes
+    )
+    values (
+      novo.id,
+      item->>'nome',
+      item->>'categoria',
+      (item->>'quantidade')::integer,
+      (item->>'preco_unitario')::numeric,
+      (item->>'total')::numeric,
+      coalesce(array(select jsonb_array_elements_text(coalesce(item->'adicionais','[]'::jsonb))), '{}'),
+      nullif(item->>'removidos',''),
+      nullif(item->>'observacoes','')
+    );
+  end loop;
+
+  return jsonb_build_object(
+    'id', novo.id,
+    'codigo', novo.codigo,
+    'token_publico', novo.token_publico,
+    'status', novo.status,
+    'total', novo.total
+  );
+end;
+$$;
+
+create or replace function public.consultar_pedido_publico(p_token uuid)
+returns jsonb
+language sql
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'id', p.id,
+    'codigo', p.codigo,
+    'cliente_nome', p.cliente_nome,
+    'tipo', p.tipo,
+    'status', p.status,
+    'subtotal', p.subtotal,
+    'taxa_entrega', p.taxa_entrega,
+    'total', p.total,
+    'criado_em', p.criado_em,
+    'atualizado_em', p.atualizado_em,
+    'itens', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'nome', i.nome,
+        'quantidade', i.quantidade,
+        'preco_unitario', i.preco_unitario,
+        'total', i.total,
+        'adicionais', i.adicionais,
+        'removidos', i.removidos,
+        'observacoes', i.observacoes
+      ) order by i.criado_em)
+      from public.pedido_itens i where i.pedido_id = p.id
+    ), '[]'::jsonb)
+  )
+  from public.pedidos p
+  where p.token_publico = p_token;
+$$;
+
+revoke all on function public.criar_pedido_publico(jsonb) from public;
+grant execute on function public.criar_pedido_publico(jsonb) to anon, authenticated;
+revoke all on function public.consultar_pedido_publico(uuid) from public;
+grant execute on function public.consultar_pedido_publico(uuid) to anon, authenticated;
