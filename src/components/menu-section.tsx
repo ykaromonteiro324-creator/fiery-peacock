@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { ImageAccordion } from "@/components/ui/image-accordion";
 import { Button } from "@/components/ui/button";
 import { MenuCustomizer, type MenuCustomization } from "@/components/menu-customizer";
@@ -114,6 +115,11 @@ export function MenuSection() {
   const [selected, setSelected] = useState(0);
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [order, setOrder] = useState<OrderLine[]>([]);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+  const [customer, setCustomer] = useState({ name: "", phone: "", type: "retirada" as "retirada" | "entrega", address: "", notes: "" });
+  const navigate = useNavigate();
   const galleryRef = useRef<HTMLDivElement>(null);
 
   const pick = (event: SyntheticEvent<HTMLDivElement>) => {
@@ -141,20 +147,49 @@ export function MenuSection() {
 
   const orderTotal = order.reduce((sum, item) => sum + item.customization.total, 0);
 
-  const sendOrder = () => {
-    if (!order.length) return;
-    const lines = order.map((item) => {
-      const c = item.customization;
-      return [
-        `${c.quantity}x ${item.name} — ${money(c.total)}`,
-        c.additions.length ? `Adicionais: ${c.additions.join(", ")}` : "",
-        c.removals ? `Retirar: ${c.removals}` : "",
-        c.notes ? `Obs.: ${c.notes}` : "",
-      ].filter(Boolean).join("\n");
-    }).join("\n\n");
-
-    const body = `Olá! Gostaria de fazer este pedido:\n\n${lines}\n\nTotal dos itens: ${money(orderTotal)}\n\nPor favor, me informem as opções de entrega e pagamento.`;
-    window.location.href = `mailto:ola@pavaoflamejante.com.br?subject=${encodeURIComponent("Novo pedido - Pavão Flamejante")}&body=${encodeURIComponent(body)}`;
+  const sendOrder = async () => {
+    if (!order.length || !supabase) return;
+    if (customer.name.trim().length < 2 || customer.phone.trim().length < 8) {
+      setCheckoutError("Informe seu nome e telefone.");
+      return;
+    }
+    if (customer.type === "entrega" && customer.address.trim().length < 5) {
+      setCheckoutError("Informe o endereço de entrega.");
+      return;
+    }
+    setSending(true);
+    setCheckoutError("");
+    const payload = {
+      cliente_nome: customer.name.trim(),
+      cliente_telefone: customer.phone.trim(),
+      tipo: customer.type,
+      endereco: customer.type === "entrega" ? customer.address.trim() : null,
+      observacoes: customer.notes.trim() || null,
+      subtotal: Number(orderTotal.toFixed(2)),
+      taxa_entrega: 0,
+      total: Number(orderTotal.toFixed(2)),
+      itens: order.map((item) => ({
+        nome: item.name,
+        categoria: item.category,
+        quantidade: item.customization.quantity,
+        preco_unitario: Number((item.customization.total / item.customization.quantity).toFixed(2)),
+        total: Number(item.customization.total.toFixed(2)),
+        adicionais: item.customization.additions,
+        removidos: item.customization.removals || null,
+        observacoes: item.customization.notes || null,
+      })),
+    };
+    const { data, error } = await supabase.rpc("criar_pedido_publico", { pedido: payload });
+    if (error || !data?.token_publico) {
+      setCheckoutError("Não foi possível enviar o pedido. Tente novamente.");
+      setSending(false);
+      return;
+    }
+    setSending(false);
+    setCheckoutOpen(false);
+    setOrder([]);
+    localStorage.setItem("ultimo_pedido_pavao", data.token_publico);
+    navigate({ to: "/pedido/$token", params: { token: data.token_publico } });
   };
 
   const displayedCategories = remoteCategories ?? categories;
@@ -219,7 +254,7 @@ export function MenuSection() {
             </div>
             <div className="flex flex-col gap-3 border-t border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-zinc-500">A entrega e o pagamento podem ser confirmados ao finalizar.</p>
-              <Button type="button" onClick={sendOrder} className="rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white">Enviar pedido <span className="ml-2">↗</span></Button>
+              <Button type="button" onClick={() => { setCheckoutError(""); setCheckoutOpen(true); }} className="rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white">Finalizar pedido <span className="ml-2">→</span></Button>
             </div>
           </div>
         )}
@@ -250,6 +285,30 @@ export function MenuSection() {
         category={current.title}
         onConfirm={addToOrder}
       />
+
+      {checkoutOpen && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-orange-400/20 bg-background p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div><p className="text-xs uppercase tracking-[.25em] text-primary">Finalizar pedido</p><h3 className="mt-2 font-display text-3xl">Só falta confirmar seus dados.</h3></div>
+              <button type="button" onClick={() => setCheckoutOpen(false)} className="rounded-full border px-3 py-1 text-sm">×</button>
+            </div>
+            <div className="mt-6 space-y-4">
+              <input className="h-11 w-full rounded-xl border bg-background px-3" placeholder="Seu nome" value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})}/>
+              <input className="h-11 w-full rounded-xl border bg-background px-3" placeholder="Telefone / WhatsApp" inputMode="tel" value={customer.phone} onChange={e=>setCustomer({...customer,phone:e.target.value})}/>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={()=>setCustomer({...customer,type:"retirada"})} className={`rounded-xl border p-3 text-sm ${customer.type==="retirada"?"border-primary bg-primary/10":"border-border"}`}>Retirada</button>
+                <button type="button" onClick={()=>setCustomer({...customer,type:"entrega"})} className={`rounded-xl border p-3 text-sm ${customer.type==="entrega"?"border-primary bg-primary/10":"border-border"}`}>Entrega</button>
+              </div>
+              {customer.type==="entrega" && <textarea className="min-h-24 w-full rounded-xl border bg-background p-3" placeholder="Endereço completo para entrega" value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})}/>}
+              <textarea className="min-h-20 w-full rounded-xl border bg-background p-3" placeholder="Observações do pedido (opcional)" value={customer.notes} onChange={e=>setCustomer({...customer,notes:e.target.value})}/>
+              <div className="rounded-xl border border-border bg-muted/30 p-4"><div className="flex justify-between text-sm"><span>Total</span><strong>{money(orderTotal)}</strong></div><p className="mt-2 text-xs text-muted-foreground">O pedido será enviado diretamente para o painel.</p></div>
+              {checkoutError && <p className="text-sm text-red-400">{checkoutError}</p>}
+              <Button disabled={sending} type="button" onClick={sendOrder} className="h-12 w-full rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white">{sending ? "Enviando pedido..." : "Confirmar pedido"}</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
