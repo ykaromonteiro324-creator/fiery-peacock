@@ -11,7 +11,7 @@ function AdminDashboard(){ return <AdminRoute><Dashboard/></AdminRoute>; }
 function Dashboard(){
  const [counts,setCounts]=useState<CountState>({produtos:0,categorias:0,pedidos:0,agendamentos:0,leads:0});
  const [loading,setLoading]=useState(true);
- useEffect(()=>{let alive=true;(async()=>{if(!supabase){setLoading(false);return;}const tables=["produtos","categorias","pedidos","agendamentos","leads"] as const;const results=await Promise.all(tables.map(async table=>{const {count}=await supabase.from(table).select("*",{count:"exact",head:true});return count??0;}));if(alive){setCounts({produtos:results[0],categorias:results[1],pedidos:results[2],agendamentos:results[3],leads:results[4]});setLoading(false);}})();return()=>{alive=false}},[]);
+ useEffect(()=>{let alive=true;(async()=>{if(!supabase){setLoading(false);return;}const tables=["produtos","categorias","pedidos","agendamentos","leads"] as const;const results=await Promise.all(tables.map(async table=>{const {count}=await supabase!.from(table).select("*",{count:"exact",head:true});return count??0;}));if(alive){setCounts({produtos:results[0]??0,categorias:results[1]??0,pedidos:results[2]??0,agendamentos:results[3]??0,leads:results[4]??0});setLoading(false);}})();return()=>{alive=false}},[]);
  const cards=useMemo(()=>[
   {label:"Produtos",value:counts.produtos,href:"/admin/produtos",icon:"🛍️"},
   {label:"Categorias",value:counts.categorias,href:"/admin/produtos",icon:"🗂️"},
