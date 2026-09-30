@@ -190,3 +190,6 @@ revoke all on function public.criar_pedido_publico(jsonb) from public;
 grant execute on function public.criar_pedido_publico(jsonb) to anon, authenticated;
 revoke all on function public.consultar_pedido_publico(uuid) from public;
 grant execute on function public.consultar_pedido_publico(uuid) to anon, authenticated;
+-- O cliente cria o pedido e seus itens exclusivamente pela função segura acima.
+drop policy if exists "pedidos_public_insert" on public.pedidos;
+drop policy if exists "pedido_itens_public_insert" on public.pedido_itens;
