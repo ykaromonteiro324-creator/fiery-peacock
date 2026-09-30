@@ -14,16 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pedido_itens: {
+        Row: {
+          adicionais: Json
+          categoria: string
+          created_at: string
+          id: string
+          nome: string
+          observacoes: string | null
+          pedido_id: string
+          preco_unitario: number
+          quantidade: number
+          retirar: string | null
+          total: number
+        }
+        Insert: {
+          adicionais?: Json
+          categoria?: string
+          created_at?: string
+          id?: string
+          nome: string
+          observacoes?: string | null
+          pedido_id: string
+          preco_unitario: number
+          quantidade: number
+          retirar?: string | null
+          total: number
+        }
+        Update: {
+          adicionais?: Json
+          categoria?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          pedido_id?: string
+          preco_unitario?: number
+          quantidade?: number
+          retirar?: string | null
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedido_itens_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedidos: {
+        Row: {
+          cliente_nome: string
+          cliente_telefone: string
+          codigo: string
+          created_at: string
+          endereco: string | null
+          id: string
+          observacoes: string | null
+          status: string
+          subtotal: number
+          taxa_entrega: number
+          tipo: string
+          token: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          cliente_nome: string
+          cliente_telefone: string
+          codigo: string
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: string
+          subtotal: number
+          taxa_entrega?: number
+          tipo: string
+          token?: string
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          cliente_nome?: string
+          cliente_telefone?: string
+          codigo?: string
+          created_at?: string
+          endereco?: string | null
+          id?: string
+          observacoes?: string | null
+          status?: string
+          subtotal?: number
+          taxa_entrega?: number
+          tipo?: string
+          token?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      criar_pedido: { Args: { p: Json }; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      obter_pedido: {
+        Args: { p_codigo: string; p_token: string }
+        Returns: Json
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "equipe" | "cliente"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +279,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "equipe", "cliente"],
+    },
   },
 } as const
