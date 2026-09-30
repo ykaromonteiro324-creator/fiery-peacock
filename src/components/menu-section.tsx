@@ -43,7 +43,7 @@ import whisky from "@/assets/menu/whisky.jpg.asset.json";
 import coquetel from "@/assets/menu/coquetel.jpg.asset.json";
 import semAlcool from "@/assets/menu/sem-alcool.jpg.asset.json";
 
-type Dish = { name: string; description: string; price: string; originalPrice?: string; image: string };
+type Dish = { name: string; description: string; price: string; originalPrice?: string | undefined; image: string };
 type Category = { title: string; subtitle: string; image: string; dishes: Dish[] };
 type OrderLine = Dish & { category: string; customization: MenuCustomization };
 
