@@ -9,6 +9,8 @@ export type MenuCustomization = {
   removals: string;
   notes: string;
   total: number;
+  unitPrice: number;
+  additionDetails: { name: string; price: number }[];
 };
 
 type Addition = { name: string; price: number };
@@ -75,7 +77,7 @@ export function MenuCustomizer({
   const [notes, setNotes] = useState("");
 
   const options = additionsByCategory[category] ?? [];
-  const basePrice = useMemo(() => Number(dish?.price.replace(/[^d,]/g, "").replace(",", ".") || 0), [dish]);
+  const basePrice = useMemo(() => Number(dish?.price.replace(/[^\d,]/g, "").replace(",", ".") || 0), [dish]);
   const additionsTotal = options
     .filter((option) => additions.includes(option.name))
     .reduce((sum, option) => sum + option.price, 0);
@@ -95,7 +97,7 @@ export function MenuCustomizer({
   };
 
   const confirm = () => {
-    onConfirm({ quantity, additions, removals, notes, total });
+    onConfirm({ quantity, additions, removals, notes, total, unitPrice: basePrice, additionDetails: options.filter((o) => additions.includes(o.name)) });
     close();
   };
 
