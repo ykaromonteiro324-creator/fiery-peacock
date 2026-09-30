@@ -3,6 +3,7 @@ import { ImageAccordion } from "@/components/ui/image-accordion";
 import { Button } from "@/components/ui/button";
 import { MenuCustomizer, type MenuCustomization } from "@/components/menu-customizer";
 import { menuCategories } from "@/lib/menu-data";
+import { CheckoutDialog } from "@/components/checkout-dialog";
 import { supabase } from "@/lib/supabase";
 import { ShoppingBag, Trash2 } from "lucide-react";
 import bruschetta from "@/assets/menu/bruschetta.jpg.asset.json";
@@ -129,11 +130,13 @@ export function MenuSection() {
     setSelected(index);
   };
 
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const currentTitle = (remoteCategories ?? categories)[selected]?.title ?? "";
   const addToOrder = (customization: MenuCustomization) => {
     if (!selectedDish) return;
     setOrder((current) => [
       ...current,
-      { ...selectedDish, category: current.title, customization },
+      { ...selectedDish, category: currentTitle, customization },
     ]);
   };
 
@@ -141,21 +144,7 @@ export function MenuSection() {
 
   const orderTotal = order.reduce((sum, item) => sum + item.customization.total, 0);
 
-  const sendOrder = () => {
-    if (!order.length) return;
-    const lines = order.map((item) => {
-      const c = item.customization;
-      return [
-        `${c.quantity}x ${item.name} — ${money(c.total)}`,
-        c.additions.length ? `Adicionais: ${c.additions.join(", ")}` : "",
-        c.removals ? `Retirar: ${c.removals}` : "",
-        c.notes ? `Obs.: ${c.notes}` : "",
-      ].filter(Boolean).join("\n");
-    }).join("\n\n");
-
-    const body = `Olá! Gostaria de fazer este pedido:\n\n${lines}\n\nTotal dos itens: ${money(orderTotal)}\n\nPor favor, me informem as opções de entrega e pagamento.`;
-    window.location.href = `mailto:ola@pavaoflamejante.com.br?subject=${encodeURIComponent("Novo pedido - Pavão Flamejante")}&body=${encodeURIComponent(body)}`;
-  };
+  const sendOrder = () => { if (order.length) setCheckoutOpen(true); };
 
   const displayedCategories = remoteCategories ?? categories;
   const current = displayedCategories[selected] ?? displayedCategories[0];
@@ -218,8 +207,8 @@ export function MenuSection() {
               ))}
             </div>
             <div className="flex flex-col gap-3 border-t border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-zinc-500">A entrega e o pagamento podem ser confirmados ao finalizar.</p>
-              <Button type="button" onClick={sendOrder} className="rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white">Enviar pedido <span className="ml-2">↗</span></Button>
+              <p className="text-xs text-zinc-500">Escolha entrega ou retirada ao finalizar. Sem cadastro.</p>
+              <Button type="button" onClick={sendOrder} className="rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white">Finalizar pedido <span className="ml-2">→</span></Button>
             </div>
           </div>
         )}
@@ -250,6 +239,7 @@ export function MenuSection() {
         category={current.title}
         onConfirm={addToOrder}
       />
+      <CheckoutDialog open={checkoutOpen} onOpenChange={setCheckoutOpen} lines={order} onDone={() => setOrder([])} />
     </section>
   );
 }

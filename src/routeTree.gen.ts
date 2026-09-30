@@ -23,6 +23,7 @@ import { Route as AdminLeadsRouteImport } from './routes/admin/leads'
 import { Route as AdminPedidosRouteImport } from './routes/admin/pedidos'
 import { Route as AdminProdutosRouteImport } from './routes/admin/produtos'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as PedidoCodigoRouteImport } from './routes/pedido.$codigo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,6 +95,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PedidoCodigoRoute = PedidoCodigoRouteImport.update({
+  id: '/pedido/$codigo',
+  path: '/pedido/$codigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/api/chat': typeof ApiChatRoute
+  '/pedido/$codigo': typeof PedidoCodigoRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/api/chat': typeof ApiChatRoute
+  '/pedido/$codigo': typeof PedidoCodigoRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/api/chat': typeof ApiChatRoute
+  '/pedido/$codigo': typeof PedidoCodigoRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/api/chat'
+    | '/pedido/$codigo'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/api/chat'
+    | '/pedido/$codigo'
     | '/admin'
   id:
     | '__root__'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/api/chat'
+    | '/pedido/$codigo'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
   ApiChatRoute: typeof ApiChatRoute
+  PedidoCodigoRoute: typeof PedidoCodigoRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pedido/$codigo': {
+      id: '/pedido/$codigo'
+      path: '/pedido/$codigo'
+      fullPath: '/pedido/$codigo'
+      preLoaderRoute: typeof PedidoCodigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -329,6 +349,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPedidosRoute: AdminPedidosRoute,
   AdminProdutosRoute: AdminProdutosRoute,
   ApiChatRoute: ApiChatRoute,
+  PedidoCodigoRoute: PedidoCodigoRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
